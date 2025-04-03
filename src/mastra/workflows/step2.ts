@@ -129,10 +129,8 @@ const planActivities = new Step({
 const planIndoorActivities = new Step({
   id: 'plan-indoor-activities',
   description: 'Suggests indoor activities based on weather conditions',
-  inputSchema: forecastSchema,
   execute: async ({ context, mastra }) => {
-    const forecast =
-      context?.getStepResult<z.infer<typeof forecastSchema>>('fetch-weather')
+    const forecast = context?.getStepResult(fetchWeather)
 
     if (!forecast) {
       throw new Error('Forecast data not found')
