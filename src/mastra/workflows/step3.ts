@@ -72,8 +72,8 @@ const planActivities = new Step({
   }),
   execute: async ({ context, mastra }) => {
     const forecast =
-      context?.getStepResult<z.infer<typeof forecastSchema>>('fetch-weather') ??
-      context?.getStepResult<z.infer<typeof forecastSchema>>('trigger')
+      context?.getStepResult(fetchWeather) ??
+      context?.getStepResult('trigger').forecast
 
     if (!forecast) {
       throw new Error('Forecast data not found')
