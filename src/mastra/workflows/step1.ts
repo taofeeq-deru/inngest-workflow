@@ -88,7 +88,6 @@ const fetchWeather = new Step({
 const planActivities = new Step({
   id: 'plan-activities',
   description: 'Suggests activities based on weather conditions',
-  inputSchema: forecastSchema,
   outputSchema: z.object({
     activities: z.string(),
   }),
