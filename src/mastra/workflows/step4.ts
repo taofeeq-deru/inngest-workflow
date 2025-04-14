@@ -1,17 +1,22 @@
-import { Step, Workflow } from '@mastra/core/workflows'
+import { createWorkflow, createStep } from '@mastra/core/workflows/vNext'
+
 import { z } from 'zod'
 
-const generateSuggestionsStep = new Step({
+const generateSuggestionsStep = createStep({
   id: 'generate-suggestions',
+  inputSchema: z.object({
+    vacationDescription: z.string().describe('The description of the vacation'),
+  }),
   outputSchema: z.object({
     suggestions: z.array(z.string()),
+    vacationDescription: z.string(),
   }),
-  execute: async ({ context, mastra }) => {
+  execute: async ({ inputData, mastra }) => {
     if (!mastra) {
       throw new Error('Mastra is not initialized')
     }
 
-    const { vacationDescription } = context?.getStepResult('trigger')
+    const { vacationDescription } = inputData
     const result = await mastra.getAgent('summaryTravelAgent').generate([
       {
         role: 'user',
@@ -19,59 +24,74 @@ const generateSuggestionsStep = new Step({
       },
     ])
     console.log(result.text)
-    return { suggestions: JSON.parse(result.text) }
+    return { suggestions: JSON.parse(result.text), vacationDescription }
   },
 })
 
-const humanInputStep = new Step({
+const humanInputStep = createStep({
   id: 'human-input',
   inputSchema: z.object({
+    suggestions: z.array(z.string()),
+    vacationDescription: z.string(),
     selection: z.string().optional().describe('The selection of the user'),
   }),
   outputSchema: z.object({
-    selection: z.string().optional().describe('The selection of the user'),
+    selection: z.string().describe('The selection of the user'),
+    vacationDescription: z.string(),
   }),
-  execute: async ({ context, suspend }) => {
-    const { inputData } = context
+  execute: async ({ inputData, suspend }) => {
     if (!inputData?.selection) {
-      await suspend()
+      await suspend({})
+      return {
+        selection: '',
+        vacationDescription: inputData?.vacationDescription,
+      }
     }
-    return { selection: inputData?.selection }
+    return {
+      selection: inputData?.selection,
+      vacationDescription: inputData?.vacationDescription,
+    }
   },
 })
 
-const travelPlannerStep = new Step({
+const travelPlannerStep = createStep({
   id: 'travel-planner',
+  inputSchema: z.object({
+    selection: z.string().describe('The selection of the user'),
+    vacationDescription: z.string(),
+  }),
   outputSchema: z.object({
     travelPlan: z.string(),
   }),
-  execute: async ({ context, mastra }) => {
+  execute: async ({ inputData, mastra }) => {
     const travelAgent = mastra?.getAgent('travelAgent')
     if (!travelAgent) {
       throw new Error('Travel agent is not initialized')
     }
 
-    const { selection } = context?.getStepResult('human-input')
-    const { vacationDescription } = context?.getStepResult('trigger')
+    const { selection, vacationDescription } = inputData
     const result = await travelAgent.generate([
       { role: 'assistant', content: vacationDescription },
-      { role: 'user', content: selection },
+      { role: 'user', content: selection || '' },
     ])
     console.log(result.text)
     return { travelPlan: result.text }
   },
 })
 
-const travelAgentWorkflow = new Workflow({
-  name: 'travel-agent-workflow-step4-suspend-resume',
-  triggerSchema: z.object({
+const travelAgentWorkflow = createWorkflow({
+  id: 'travel-agent-workflow-step4-suspend-resume',
+  inputSchema: z.object({
     vacationDescription: z.string().describe('The description of the vacation'),
   }),
+  outputSchema: z.object({
+    travelPlan: z.string(),
+  }),
 })
-  .step(generateSuggestionsStep)
+  .then(generateSuggestionsStep)
   .then(humanInputStep)
   .then(travelPlannerStep)
 
 travelAgentWorkflow.commit()
 
-export { travelAgentWorkflow as weatherWorkflow }
+export { travelAgentWorkflow as weatherWorkflow, humanInputStep }

@@ -1,5 +1,7 @@
 import { Step, Workflow } from '@mastra/core/workflows'
 import { z } from 'zod'
+import { activityPlannerAgent } from '../agents'
+import { createStep, createWorkflow } from '@mastra/core/workflows/vNext'
 
 const forecastSchema = z.object({
   date: z.string(),
@@ -10,25 +12,26 @@ const forecastSchema = z.object({
   location: z.string(),
 })
 
-const fetchWeather = new Step({
+const fetchWeather = createStep({
   id: 'fetch-weather',
   description: 'Fetches weather forecast for a given city',
+  inputSchema: z.object({
+    city: z.string(),
+  }),
   outputSchema: forecastSchema,
-  execute: async ({ context }) => {
-    const triggerData: { city: string } = context.triggerData
-
-    if (!triggerData) {
+  execute: async ({ inputData }) => {
+    if (!inputData) {
       throw new Error('Trigger data not found')
     }
 
-    const geocodingUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(triggerData.city)}&count=1`
+    const geocodingUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(inputData.city)}&count=1`
     const geocodingResponse = await fetch(geocodingUrl)
     const geocodingData = (await geocodingResponse.json()) as {
       results: { latitude: number; longitude: number; name: string }[]
     }
 
     if (!geocodingData.results?.[0]) {
-      throw new Error(`Location '${triggerData.city}' not found`)
+      throw new Error(`Location '${inputData.city}' not found`)
     }
 
     const { latitude, longitude, name } = geocodingData.results[0]
@@ -63,17 +66,17 @@ const fetchWeather = new Step({
   },
 })
 
-const planActivities = new Step({
+const planActivities = createStep({
   id: 'plan-activities',
   description: 'Suggests activities based on weather conditions',
   inputSchema: forecastSchema,
   outputSchema: z.object({
     activities: z.string(),
   }),
-  execute: async ({ context, mastra }) => {
-    const forecast =
-      context?.getStepResult(fetchWeather) ??
-      context?.getStepResult('trigger').forecast
+  execute: async ({ inputData, mastra }) => {
+    console.log('mastra', mastra)
+    console.log('planActivities', inputData)
+    const forecast = inputData
 
     if (!forecast) {
       throw new Error('Forecast data not found')
@@ -101,6 +104,8 @@ const planActivities = new Step({
       process.stdout.write(chunk)
       activitiesText += chunk
     }
+
+    console.log('planActivities', activitiesText)
 
     return {
       activities: activitiesText,
@@ -130,17 +135,16 @@ function getWeatherCondition(code: number): string {
   return conditions[code] || 'Unknown'
 }
 
-const planIndoorActivities = new Step({
+const planIndoorActivities = createStep({
   id: 'plan-indoor-activities',
   description: 'Suggests indoor activities based on weather conditions',
   inputSchema: forecastSchema,
   outputSchema: z.object({
     activities: z.string(),
   }),
-  execute: async ({ context, mastra }) => {
-    const forecast =
-      context?.getStepResult(fetchWeather) ??
-      context?.getStepResult('trigger').forecast
+  execute: async ({ inputData, mastra }) => {
+    console.log('planIndoorActivities', inputData)
+    const forecast = inputData
 
     if (!forecast) {
       throw new Error('Forecast data not found')
@@ -166,21 +170,31 @@ const planIndoorActivities = new Step({
       activitiesText += chunk
     }
 
+    console.log('planIndoorActivities', activitiesText)
     return {
       activities: activitiesText,
     }
   },
 })
 
-const sythesizeStep = new Step({
+const sythesizeStep = createStep({
   id: 'sythesize-step',
   description: 'Synthesizes the results of the indoor and outdoor activities',
+  inputSchema: z.object({
+    'plan-activities': z.object({
+      activities: z.string(),
+    }),
+    'plan-indoor-activities': z.object({
+      activities: z.string(),
+    }),
+  }),
   outputSchema: z.object({
     activities: z.string(),
   }),
-  execute: async ({ context, mastra }) => {
-    const indoorActivities = context?.getStepResult(planIndoorActivities)
-    const outdoorActivities = context?.getStepResult(planActivities)
+  execute: async ({ inputData, mastra }) => {
+    console.log('sythesizeStep', inputData)
+    const indoorActivities = inputData?.['plan-indoor-activities']
+    const outdoorActivities = inputData?.['plan-activities']
 
     const prompt = `Indoor activtities:
       ${indoorActivities?.activities}
@@ -209,56 +223,50 @@ const sythesizeStep = new Step({
       activitiesText += chunk
     }
 
+    console.log('sythesizeStep', activitiesText)
     return {
       activities: activitiesText,
     }
   },
 })
 
-const planBothWorkflow = new Workflow({
-  name: 'plan-both-workflow',
-  triggerSchema: z.object({
-    forecast: forecastSchema,
+const planBothWorkflow = createWorkflow({
+  id: 'plan-both-workflow',
+  inputSchema: forecastSchema,
+  outputSchema: z.object({
+    activities: z.string(),
   }),
-  result: {
-    schema: z.object({
-      activities: z.string(),
-    }),
-    mapping: {
-      activities: {
-        step: sythesizeStep,
-        path: 'activities',
-      },
-    },
-  },
+  steps: [planActivities, planIndoorActivities, sythesizeStep],
 })
-  .step(planActivities)
-  .step(planIndoorActivities)
-  .after([planActivities, planIndoorActivities])
-  .step(sythesizeStep)
+  .parallel([planActivities, planIndoorActivities])
+  .then(sythesizeStep)
   .commit()
 
-const weatherWorkflow = new Workflow({
-  name: 'weather-workflow-step3-concurrency',
-  triggerSchema: z.object({
+const weatherWorkflow = createWorkflow({
+  id: 'weather-workflow-step3-concurrency',
+  inputSchema: z.object({
     city: z.string().describe('The city to get the weather for'),
   }),
+  outputSchema: z.object({
+    activities: z.string(),
+  }),
+  steps: [fetchWeather, planBothWorkflow, planActivities],
 })
-  .step(fetchWeather)
-  .if(async ({ context }) => {
-    const forecast = context?.getStepResult(fetchWeather)
-    return forecast?.precipitationChance > 30
-  })
-  .then(planBothWorkflow, {
-    variables: {
-      forecast: {
-        step: fetchWeather,
-        path: '.',
+  .then(fetchWeather)
+  .branch([
+    [
+      async ({ inputData }) => {
+        return inputData?.precipitationChance > 20
       },
-    },
-  })
-  .else()
-  .then(planActivities)
+      planBothWorkflow,
+    ],
+    [
+      async ({ inputData }) => {
+        return inputData?.precipitationChance <= 20
+      },
+      planActivities,
+    ],
+  ])
 
 weatherWorkflow.commit()
 

@@ -1,4 +1,4 @@
-import { Step, Workflow } from '@mastra/core/workflows'
+import { createWorkflow, createStep } from '@mastra/core/workflows/vNext'
 import { z } from 'zod'
 
 function getWeatherCondition(code: number): string {
@@ -32,18 +32,19 @@ const forecastSchema = z.object({
   location: z.string(),
 })
 
-const fetchWeather = new Step({
+const fetchWeather = createStep({
   id: 'fetch-weather',
   description: 'Fetches weather forecast for a given city',
+  inputSchema: z.object({
+    city: z.string(),
+  }),
   outputSchema: forecastSchema,
-  execute: async ({ context }) => {
-    const triggerData: { city: string } = context.triggerData
-
-    if (!triggerData) {
+  execute: async ({ inputData }) => {
+    if (!inputData) {
       throw new Error('Trigger data not found')
     }
 
-    const geocodingUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(triggerData.city)}&count=1`
+    const geocodingUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(inputData.city)}&count=1`
     const geocodingResponse = await fetch(geocodingUrl)
     const geocodingData = (await geocodingResponse.json()) as {
       results: { latitude: number; longitude: number; name: string }[]
@@ -85,14 +86,15 @@ const fetchWeather = new Step({
   },
 })
 
-const planActivities = new Step({
+const planActivities = createStep({
   id: 'plan-activities',
   description: 'Suggests activities based on weather conditions',
+  inputSchema: forecastSchema,
   outputSchema: z.object({
     activities: z.string(),
   }),
-  execute: async ({ context, mastra }) => {
-    const forecast = context.getStepResult(fetchWeather)
+  execute: async ({ inputData, mastra }) => {
+    const forecast = inputData
 
     if (!forecast) {
       throw new Error('Forecast data not found')
@@ -127,14 +129,17 @@ const planActivities = new Step({
   },
 })
 
-const weatherWorkflow = new Workflow({
+const weatherWorkflow = createWorkflow({
   steps: [fetchWeather, planActivities],
-  name: 'weather-workflow-step1-single-day',
-  triggerSchema: z.object({
+  id: 'weather-workflow-step1-single-day',
+  inputSchema: z.object({
     city: z.string().describe('The city to get the weather for'),
   }),
+  outputSchema: z.object({
+    activities: z.string(),
+  }),
 })
-  .step(fetchWeather)
+  .then(fetchWeather)
   .then(planActivities)
 
 weatherWorkflow.commit()

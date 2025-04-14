@@ -1,45 +1,42 @@
-import { Step, Workflow } from '@mastra/core/workflows'
+import { createWorkflow, createStep } from '@mastra/core/workflows/vNext'
 import { z } from 'zod'
 
-const incrementStep = new Step({
+const incrementStep = createStep({
   id: 'increment',
+  inputSchema: z.object({
+    value: z.number(),
+  }),
   outputSchema: z.object({
     value: z.number(),
   }),
-  execute: async ({ context }) => {
-    const value: { value: number } =
-      context.getStepResult('increment') ?? context.triggerData
-    return { value: value.value + 1 }
+  execute: async ({ inputData }) => {
+    return { value: inputData.value + 1 }
   },
 })
 
-const finalStep = new Step({
+const finalStep = createStep({
   id: 'final',
+  inputSchema: z.object({
+    value: z.number(),
+  }),
   outputSchema: z.object({
     value: z.number(),
-    start: z.number(),
   }),
-  execute: async ({ context }) => {
-    const value = context.getStepResult(incrementStep)
-    const start: { value: number } = context.triggerData
-    return { value: value.value, start: start.value }
+  execute: async ({ inputData }) => {
+    return { value: inputData.value }
   },
 })
 
-const workflow = new Workflow({
-  name: 'increment-workflow',
-  triggerSchema: z.object({
+const workflow = createWorkflow({
+  id: 'increment-workflow',
+  inputSchema: z.object({
+    value: z.number(),
+  }),
+  outputSchema: z.object({
     value: z.number(),
   }),
 })
-  .step(incrementStep)
-  .until(
-    {
-      ref: { step: incrementStep, path: 'value' },
-      query: { $gte: 10 },
-    },
-    incrementStep
-  )
+  .dountil(incrementStep, async ({ inputData }) => inputData.value >= 10)
   .then(finalStep)
 
 workflow.commit()

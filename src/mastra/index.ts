@@ -12,8 +12,15 @@ import { incrementWorkflow as step5Workflow } from './workflows/step5'
 import { researchAgent, factCheckAgent, editorAgent } from './agents/network'
 
 export const mastra = new Mastra({
-  workflows: {
-    weatherWorkflow,
+  // workflows: {
+  //   weatherWorkflow,
+  //   step1Workflow,
+  //   step2Workflow,
+  //   step3Workflow,
+  //   step4Workflow,
+  //   step5Workflow,
+  // },
+  newWorkflows: {
     step1Workflow,
     step2Workflow,
     step3Workflow,
