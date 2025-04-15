@@ -51,7 +51,7 @@ const fetchWeather = createStep({
     }
 
     if (!geocodingData.results?.[0]) {
-      throw new Error(`Location '${triggerData.city}' not found`)
+      throw new Error(`Location '${inputData.city}' not found`)
     }
 
     const { latitude, longitude, name } = geocodingData.results[0]

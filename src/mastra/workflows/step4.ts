@@ -33,22 +33,28 @@ const humanInputStep = createStep({
   inputSchema: z.object({
     suggestions: z.array(z.string()),
     vacationDescription: z.string(),
-    selection: z.string().optional().describe('The selection of the user'),
   }),
   outputSchema: z.object({
     selection: z.string().describe('The selection of the user'),
     vacationDescription: z.string(),
   }),
-  execute: async ({ inputData, suspend }) => {
-    if (!inputData?.selection) {
-      await suspend({})
+  resumeSchema: z.object({
+    selection: z.string().describe('The selection of the user'),
+  }),
+  suspendSchema: z.object({
+    suggestions: z.array(z.string()),
+  }),
+  execute: async ({ inputData, resumeData, suspend }) => {
+    if (!resumeData?.selection) {
+      await suspend({ suggestions: inputData?.suggestions })
       return {
         selection: '',
         vacationDescription: inputData?.vacationDescription,
       }
     }
+
     return {
-      selection: inputData?.selection,
+      selection: resumeData?.selection,
       vacationDescription: inputData?.vacationDescription,
     }
   },
