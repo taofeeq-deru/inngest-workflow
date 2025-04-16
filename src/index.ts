@@ -35,7 +35,7 @@ const readInput = (): Promise<string> => {
 // console.dir(result, { depth: null })
 
 // Example 4
-const workflow = mastra.getNewWorkflow('step4Workflow')
+const workflow = mastra.vnext_getWorkflow('step4Workflow')
 const run = workflow.createRun({})
 const result = await run.start({
   inputData: { vacationDescription: 'I want to go to the beach' },

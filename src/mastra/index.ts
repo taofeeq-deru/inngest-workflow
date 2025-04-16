@@ -20,7 +20,7 @@ export const mastra = new Mastra({
   //   step4Workflow,
   //   step5Workflow,
   // },
-  newWorkflows: {
+  vnext_workflows: {
     step1Workflow,
     step2Workflow,
     step3Workflow,
