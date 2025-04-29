@@ -11,7 +11,7 @@ const generateSuggestionsStep = createStep({
     suggestions: z.array(z.string()),
     vacationDescription: z.string(),
   }),
-  execute: async ({ inputData, mastra }) => {
+  execute: async ({ inputData, mastra, container }) => {
     if (!mastra) {
       throw new Error('Mastra is not initialized')
     }
@@ -44,7 +44,7 @@ const humanInputStep = createStep({
   suspendSchema: z.object({
     suggestions: z.array(z.string()),
   }),
-  execute: async ({ inputData, resumeData, suspend }) => {
+  execute: async ({ inputData, resumeData, suspend, getInitData }) => {
     if (!resumeData?.selection) {
       await suspend({ suggestions: inputData?.suggestions })
       return {
