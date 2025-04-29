@@ -37,3 +37,11 @@ export const activityPlannerAgent = new Agent({
   `,
   tools: { activityPlannerTool },
 })
+
+export const weatherReporterAgent = new Agent({
+  name: 'weatherExplainerAgent',
+  model: openai('gpt-4o'),
+  instructions: `
+  You are an weather explainer. You have access to input that will help you get weather-specific activities for any city. The tool uses agents to plan the activities, you just need to provide the city. Explain the weather report like a weather reporter.
+  `,
+})
