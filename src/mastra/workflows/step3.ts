@@ -1,7 +1,5 @@
-import { Step, Workflow } from '@mastra/core/workflows'
 import { z } from 'zod'
-import { activityPlannerAgent } from '../agents'
-import { createStep, createWorkflow } from '@mastra/core/workflows/vNext'
+import { createStep, createWorkflow } from '@mastra/core/workflows'
 
 const forecastSchema = z.object({
   date: z.string(),

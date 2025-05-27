@@ -1,6 +1,6 @@
 import { Mastra } from '@mastra/core/mastra'
+import { DefaultStorage } from '@mastra/libsql'
 import { createLogger } from '@mastra/core/logger'
-import { weatherWorkflow } from './workflows'
 import { weatherWorkflow as step1Workflow } from './workflows/step1'
 import { weatherWorkflow as step2Workflow } from './workflows/step2'
 import { weatherWorkflow as step3Workflow } from './workflows/step3'
@@ -17,16 +17,12 @@ import { incrementWorkflow as step5Workflow } from './workflows/step5'
 import { researchAgent, factCheckAgent, editorAgent } from './agents/network'
 import { weatherWorkflow as step6Workflow } from './workflows/step6'
 
+const storage = new DefaultStorage({
+  url: ':memory:',
+})
+
 export const mastra = new Mastra({
-  // workflows: {
-  //   weatherWorkflow,
-  //   step1Workflow,
-  //   step2Workflow,
-  //   step3Workflow,
-  //   step4Workflow,
-  //   step5Workflow,
-  // },
-  vnext_workflows: {
+  workflows: {
     step1Workflow,
     step2Workflow,
     step3Workflow,
@@ -46,6 +42,7 @@ export const mastra = new Mastra({
     editorAgent,
     weatherReporterAgent,
   },
+  storage,
   logger: createLogger({
     name: 'Mastra',
     level: 'info',

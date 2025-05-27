@@ -1,4 +1,4 @@
-import { createWorkflow, createStep } from '@mastra/core/workflows/vNext'
+import { createWorkflow, createStep } from '@mastra/core/workflows'
 import { weatherTool } from '../tools'
 import { weatherReporterAgent } from '../agents'
 import { z } from 'zod'
