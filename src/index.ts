@@ -3,6 +3,11 @@ import { mastra } from './mastra'
 import { createInterface } from 'readline'
 import { humanInputStep } from './mastra/workflows/step4'
 import { serve } from '@hono/node-server'
+import dotenv from 'dotenv'
+
+dotenv.config()
+
+const PORT = process.env.PORT || 4111
 
 const readInput = (): Promise<string> => {
   const rl = createInterface({

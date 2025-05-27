@@ -1,4 +1,5 @@
 import { Inngest } from 'inngest'
+import { realtimeMiddleware } from '@inngest/realtime'
 import { init } from '@mastra/inngest'
 import { z } from 'zod'
 
@@ -7,6 +8,7 @@ const { createStep, createWorkflow } = init(
     baseUrl: 'http://localhost:8288',
     id: 'mastra',
     isDev: true,
+    middleware: [realtimeMiddleware()],
   })
 )
 

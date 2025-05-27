@@ -1,5 +1,6 @@
 import { Mastra } from '@mastra/core/mastra'
 import { serve } from '@mastra/inngest'
+import { realtimeMiddleware } from '@inngest/realtime'
 import { DefaultStorage } from '@mastra/libsql'
 import { createLogger } from '@mastra/core/logger'
 import { weatherWorkflow as step1Workflow } from './workflows/step1'
@@ -62,6 +63,7 @@ export const mastra = new Mastra({
               id: 'mastra',
               baseUrl: 'http://localhost:8288',
               isDev: true,
+              middleware: [realtimeMiddleware()],
             }),
           }),
       },
