@@ -17,25 +17,31 @@ const readInput = (): Promise<string> => {
 }
 
 // Example 1
-// const workflow = mastra.getNewWorkflow('step1Workflow')
-// const run = workflow.createRun({})
-// const result = await run.start({ inputData: { city: 'New York' } })
-// console.dir(result, { depth: null })
+const workflow = mastra.getWorkflow('step1Workflow')
+const run = workflow.createRun({})
+const result = await run.start({ inputData: { city: 'New York' } })
+if (result.status === 'success') {
+  const planActivities = result.steps['plan-activities']
+  if (planActivities.status === 'success') {
+    console.log(planActivities.output?.activities)
+  }
+}
+console.dir(result, { depth: null })
 
 // Example 2
-// const workflow = mastra.vnext_getWorkflow('step2Workflow')
+// const workflow = mastra.getWorkflow('step2Workflow')
 // const run = workflow.createRun({})
 // const result = await run.start({ inputData: { city: 'New York' } })
 // console.dir(result, { depth: null })
 
 // Example 3
-// const workflow = mastra.getNewWorkflow('step3Workflow')
+// const workflow = mastra.getWorkflow('step3Workflow')
 // const run = workflow.createRun({})
 // const result = await run.start({ inputData: { city: 'New York' } })
 // console.dir(result, { depth: null })
 
 // Example 4
-// const workflow = mastra.vnext_getWorkflow('step4Workflow')
+// const workflow = mastra.getWorkflow('step4Workflow')
 // const run = workflow.createRun({})
 // const result = await run.start({
 //   inputData: { vacationDescription: 'I want to go to the beach' },
@@ -73,13 +79,13 @@ const readInput = (): Promise<string> => {
 // }
 
 // Example 5
-// const workflow = mastra.vnext_getWorkflow('step5Workflow')
+// const workflow = mastra.getWorkflow('step5Workflow')
 // const run = workflow.createRun({})
 // const result = await run.start({ inputData: { value: 5 } })
 // console.dir(result, { depth: null })
 
 // Example 6
-const workflow = mastra.vnext_getWorkflow('step6Workflow')
-const run = workflow.createRun({})
-const result = await run.start({ inputData: { location: 'New York' } })
-console.dir(result, { depth: null })
+// const workflow = mastra.getWorkflow('step6Workflow')
+// const run = workflow.createRun({})
+// const result = await run.start({ inputData: { location: 'New York' } })
+// console.dir(result, { depth: null })
