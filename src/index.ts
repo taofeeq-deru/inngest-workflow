@@ -1,6 +1,8 @@
+import { createHonoServer } from '@mastra/deployer/server'
 import { mastra } from './mastra'
 import { createInterface } from 'readline'
 import { humanInputStep } from './mastra/workflows/step4'
+import { serve } from '@hono/node-server'
 
 const readInput = (): Promise<string> => {
   const rl = createInterface({
@@ -17,16 +19,16 @@ const readInput = (): Promise<string> => {
 }
 
 // Example 1
-const workflow = mastra.getWorkflow('step1Workflow')
-const run = workflow.createRun({})
-const result = await run.start({ inputData: { city: 'New York' } })
-if (result.status === 'success') {
-  const planActivities = result.steps['plan-activities']
-  if (planActivities.status === 'success') {
-    console.log(planActivities.output?.activities)
-  }
-}
-console.dir(result, { depth: null })
+// const workflow = mastra.getWorkflow('step1Workflow')
+// const run = workflow.createRun({})
+// const result = await run.start({ inputData: { city: 'New York' } })
+// if (result.status === 'success') {
+//   const planActivities = result.steps['plan-activities']
+//   if (planActivities.status === 'success') {
+//     console.log(planActivities.output?.activities)
+//   }
+// }
+// console.dir(result, { depth: null })
 
 // Example 2
 // const workflow = mastra.getWorkflow('step2Workflow')
@@ -85,7 +87,17 @@ console.dir(result, { depth: null })
 // console.dir(result, { depth: null })
 
 // Example 6
-// const workflow = mastra.getWorkflow('step6Workflow')
-// const run = workflow.createRun({})
-// const result = await run.start({ inputData: { location: 'New York' } })
-// console.dir(result, { depth: null })
+
+const app = await createHonoServer(mastra)
+
+const srv = serve({
+  fetch: app.fetch,
+  port: 4111,
+})
+
+const workflow = mastra.getWorkflow('step6Workflow')
+const run = workflow.createRun({})
+const result = await run.start({ inputData: { city: 'New York' } })
+console.dir(result, { depth: null })
+
+srv.close()

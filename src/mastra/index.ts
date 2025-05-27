@@ -1,4 +1,5 @@
 import { Mastra } from '@mastra/core/mastra'
+import { serve } from '@mastra/inngest'
 import { DefaultStorage } from '@mastra/libsql'
 import { createLogger } from '@mastra/core/logger'
 import { weatherWorkflow as step1Workflow } from './workflows/step1'
@@ -16,6 +17,7 @@ import { planningAgent } from './agents/planning'
 import { incrementWorkflow as step5Workflow } from './workflows/step5'
 import { researchAgent, factCheckAgent, editorAgent } from './agents/network'
 import { weatherWorkflow as step6Workflow } from './workflows/step6'
+import { Inngest } from 'inngest'
 
 const storage = new DefaultStorage({
   url: ':memory:',
@@ -47,4 +49,22 @@ export const mastra = new Mastra({
     name: 'Mastra',
     level: 'info',
   }),
+  server: {
+    host: '0.0.0.0',
+    apiRoutes: [
+      {
+        path: '/inngest/api',
+        method: 'ALL',
+        createHandler: async ({ mastra }) =>
+          serve({
+            mastra,
+            inngest: new Inngest({
+              id: 'mastra',
+              baseUrl: 'http://localhost:8288',
+              isDev: true,
+            }),
+          }),
+      },
+    ],
+  },
 })
