@@ -99,20 +99,11 @@ const planActivities = createStep({
     const forecast = inputData
     const { city } = getInitData<typeof weatherWorkflow>()
 
-    if (!forecast) {
-      throw new Error('Forecast data not found')
-    }
-
     const prompt = `Based on the following weather forecast for ${city}, suggest appropriate activities:
       ${JSON.stringify(forecast, null, 2)}
       `
 
-    console.log('prompt', prompt)
-
-    const agent = mastra?.getAgent('planningAgent')
-    if (!agent) {
-      throw new Error('Planning agent not found')
-    }
+    const agent = mastra.getAgent('planningAgent')
 
     const response = await agent.stream([
       {
@@ -141,20 +132,14 @@ const planIndoorActivities = createStep({
   outputSchema: z.object({
     activities: z.string(),
   }),
-  execute: async ({ inputData, mastra }) => {
+  execute: async ({ getInitData, inputData, mastra }) => {
+    const { city } = getInitData()
     console.log('planIndoorActivities')
     const forecast = inputData
 
-    if (!forecast) {
-      throw new Error('Forecast data not found')
-    }
+    const prompt = `In case it rains, plan indoor activities for ${city} on ${forecast.date}`
 
-    const prompt = `In case it rains, plan indoor activities for ${forecast.location} on ${forecast.date}`
-
-    const agent = mastra?.getAgent('planningAgent')
-    if (!agent) {
-      throw new Error('Planning agent not found')
-    }
+    const agent = mastra.getAgent('planningAgent')
 
     const response = await agent.stream([
       {

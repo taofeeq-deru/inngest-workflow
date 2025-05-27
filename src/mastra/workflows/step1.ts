@@ -29,7 +29,6 @@ const forecastSchema = z.object({
   minTemp: z.number(),
   precipitationChance: z.number(),
   condition: z.string(),
-  location: z.string(),
 })
 
 const fetchWeather = createStep({
@@ -75,7 +74,6 @@ const fetchWeather = createStep({
       maxTemp: Math.max(...data.hourly.temperature_2m),
       minTemp: Math.min(...data.hourly.temperature_2m),
       condition: getWeatherCondition(data.current.weathercode),
-      location: name,
       precipitationChance: data.hourly.precipitation_probability.reduce(
         (acc, curr) => Math.max(acc, curr),
         0
@@ -93,22 +91,15 @@ const planActivities = createStep({
   outputSchema: z.object({
     activities: z.string(),
   }),
-  execute: async ({ inputData, mastra }) => {
+  execute: async ({ getInitData, inputData, mastra }) => {
+    const { city } = getInitData()
     const forecast = inputData
 
-    if (!forecast) {
-      throw new Error('Forecast data not found')
-    }
-
-    const prompt = `Based on the following weather forecast for ${forecast.location}, suggest appropriate activities:
+    const prompt = `Based on the following weather forecast for ${city}, suggest appropriate activities:
       ${JSON.stringify(forecast, null, 2)}
       `
 
-    const agent = mastra?.getAgent('planningAgent')
-    if (!agent) {
-      throw new Error('Planning agent not found')
-    }
-
+    const agent = mastra.getAgent('planningAgent')
     const response = await agent.stream([
       {
         role: 'user',

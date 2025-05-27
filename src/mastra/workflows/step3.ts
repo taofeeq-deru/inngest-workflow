@@ -71,23 +71,16 @@ const planActivities = createStep({
   outputSchema: z.object({
     activities: z.string(),
   }),
-  execute: async ({ inputData, mastra }) => {
-    console.log('mastra', mastra)
+  execute: async ({ getInitData, inputData, mastra }) => {
+    const { city } = getInitData()
     console.log('planActivities', inputData)
     const forecast = inputData
 
-    if (!forecast) {
-      throw new Error('Forecast data not found')
-    }
-
-    const prompt = `Based on the following weather forecast for ${forecast.location}, suggest appropriate activities:
+    const prompt = `Based on the following weather forecast for ${city}, suggest appropriate activities:
       ${JSON.stringify(forecast, null, 2)}
       `
 
-    const agent = mastra?.getAgent('planningAgent')
-    if (!agent) {
-      throw new Error('Planning agent not found')
-    }
+    const agent = mastra.getAgent('planningAgent')
 
     const response = await agent.stream([
       {
@@ -140,20 +133,14 @@ const planIndoorActivities = createStep({
   outputSchema: z.object({
     activities: z.string(),
   }),
-  execute: async ({ inputData, mastra }) => {
+  execute: async ({ getInitData, inputData, mastra }) => {
+    const { city } = getInitData()
     console.log('planIndoorActivities', inputData)
     const forecast = inputData
 
-    if (!forecast) {
-      throw new Error('Forecast data not found')
-    }
+    const prompt = `In case it rains, plan indoor activities for ${city} on ${forecast.date}`
 
-    const prompt = `In case it rains, plan indoor activities for ${forecast.location} on ${forecast.date}`
-
-    const agent = mastra?.getAgent('planningAgent')
-    if (!agent) {
-      throw new Error('Planning agent not found')
-    }
+    const agent = mastra.getAgent('planningAgent')
 
     const response = await agent.stream([
       {
@@ -202,10 +189,7 @@ const sythesizeStep = createStep({
       
       There is a chance of rain so be prepared to do indoor activities if needed.`
 
-    const agent = mastra?.getAgent('synthesizeAgent')
-    if (!agent) {
-      throw new Error('Planning agent not found')
-    }
+    const agent = mastra.getAgent('synthesizeAgent')
 
     const response = await agent.stream([
       {

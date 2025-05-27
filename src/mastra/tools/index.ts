@@ -118,17 +118,15 @@ export const activityPlannerTool = createTool({
 
     const run = plannerWorkflow.createRun()
     const results = await run.start({
-      triggerData: {
+      inputData: {
         city: context.city,
       },
     })
-    const planActivitiesStep = results.results['plan-activities']
-    if (planActivitiesStep.status === 'success') {
-      return planActivitiesStep.output
+
+    if (results.status !== 'success') {
+      return { activities: 'Failed to get activities' }
     }
 
-    return {
-      activities: 'No activities found',
-    }
+    return results.result
   },
 })
