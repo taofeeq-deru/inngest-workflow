@@ -20,24 +20,14 @@ const generateSuggestionsStep = createStep({
         },
       ],
       {
-        output: {
-          type: 'object',
-          properties: {
-            suggestions: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  location: { type: 'string' },
-                  description: { type: 'string' },
-                },
-                additionalProperties: false,
-                required: ['location', 'description'],
-              },
-            },
-          },
-          required: ['suggestions'],
-        },
+        output: z.object({
+          suggestions: z.array(
+            z.object({
+              location: z.string(),
+              description: z.string(),
+            })
+          ),
+        }),
       }
     )
     console.log(result.object)
