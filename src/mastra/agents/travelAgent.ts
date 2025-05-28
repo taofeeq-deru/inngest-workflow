@@ -8,7 +8,7 @@ export const summaryAgent = new Agent({
   model: llm,
   instructions: `
   You are a travel agent who is given a user prompt about what kind of holiday they want to go on.
-  You then generate 3 different options for the holiday. Return the suggestions as a JSON array {"location": "string", "description": "string"}[]. Don't format as markdown.
+  You then generate 3 different options for the holiday. Return the suggestions as a JSON array { "suggestions": [{"location": "string", "description": "string"}] }. Don't format as markdown.
 
   Make the options as different as possible from each other.
   Also make the plan very short and summarized.

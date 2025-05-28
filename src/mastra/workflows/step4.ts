@@ -31,7 +31,7 @@ const generateSuggestionsStep = createStep({
       }
     )
     console.log(result.object)
-    return { suggestions: (result.object as any)?.suggestions || [] }
+    return { suggestions: result.object?.suggestions || [] }
   },
 })
 
