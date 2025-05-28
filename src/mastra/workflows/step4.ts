@@ -12,14 +12,36 @@ const generateSuggestionsStep = createStep({
   }),
   execute: async ({ inputData, mastra }) => {
     const { vacationDescription } = inputData
-    const result = await mastra.getAgent('summaryTravelAgent').generate([
+    const result = await mastra.getAgent('summaryTravelAgent').generate(
+      [
+        {
+          role: 'user',
+          content: `Generate 3 suggestions for: ${vacationDescription}`,
+        },
+      ],
       {
-        role: 'user',
-        content: `Generate 3 suggestions for: ${vacationDescription}`,
-      },
-    ])
-    console.log(result.text)
-    return { suggestions: JSON.parse(result.text) }
+        output: {
+          type: 'object',
+          properties: {
+            suggestions: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  location: { type: 'string' },
+                  description: { type: 'string' },
+                },
+                additionalProperties: false,
+                required: ['location', 'description'],
+              },
+            },
+          },
+          required: ['suggestions'],
+        },
+      }
+    )
+    console.log(result.object)
+    return { suggestions: (result.object as any)?.suggestions || [] }
   },
 })
 
