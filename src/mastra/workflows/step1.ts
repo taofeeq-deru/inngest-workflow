@@ -39,10 +39,6 @@ const fetchWeather = createStep({
   }),
   outputSchema: forecastSchema,
   execute: async ({ inputData }) => {
-    if (!inputData) {
-      throw new Error('Trigger data not found')
-    }
-
     const geocodingUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(inputData.city)}&count=1`
     const geocodingResponse = await fetch(geocodingUrl)
     const geocodingData = (await geocodingResponse.json()) as {

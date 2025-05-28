@@ -185,6 +185,14 @@ const weatherWorkflow = createWorkflow({
       planActivities,
     ],
   ])
+  // {
+  //  'plan-activities': {
+  //   activities: ''
+  //  },
+  //  'plan-indoor-activities': {
+  //   activities: ''
+  //  }
+  // }
   .map({
     activities: {
       step: [planActivities, planIndoorActivities],
