@@ -108,7 +108,7 @@ export const activityPlannerTool = createTool({
     city: z.string(),
   }),
   outputSchema: z.object({
-    activities: z.array(z.string()),
+    activities: z.string(),
   }),
   execute: async ({ context, mastra }) => {
     const plannerWorkflow = mastra?.getWorkflow('step1Workflow')

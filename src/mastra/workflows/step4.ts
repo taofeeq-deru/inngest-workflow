@@ -59,7 +59,7 @@ const humanInputStep = createStep({
   suspendSchema: z.object({
     suggestions: z.array(z.string()),
   }),
-  execute: async ({ inputData, resumeData, suspend, getInitData }) => {
+  execute: async ({ inputData, resumeData, suspend }) => {
     if (!resumeData?.selection) {
       await suspend({ suggestions: inputData?.suggestions })
       return {
