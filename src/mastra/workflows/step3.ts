@@ -249,6 +249,12 @@ const weatherWorkflow = createWorkflow({
       planActivities,
     ],
   ])
+  .map({
+    activities: {
+      step: [planActivities, planBothWorkflow],
+      path: 'activities',
+    },
+  })
 
 weatherWorkflow.commit()
 
