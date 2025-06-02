@@ -61,11 +61,13 @@ export const mastra = new Mastra({
             mastra,
             inngest: new Inngest({
               id: "mastra",
-              baseUrl:
-                process.env.NODE_ENV === "production"
-                  ? "https://api.inngest.com"
-                  : "http://localhost:8288",
-              isDev: process.env.NODE_ENV !== "production",
+              baseUrl: "https://api.inngest.com",
+              isDev: false,
+              // baseUrl:
+              //   process.env.NODE_ENV === "production"
+              //     ? "https://api.inngest.com"
+              //     : "http://localhost:8288",
+              // isDev: process.env.NODE_ENV !== "production",
               middleware: [realtimeMiddleware()]
             })
           })

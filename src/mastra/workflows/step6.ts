@@ -5,11 +5,13 @@ import { z } from "zod";
 
 const { createStep, createWorkflow } = init(
   new Inngest({
-    baseUrl:
-      process.env.NODE_ENV === "production"
-        ? "https://api.inngest.com"
-        : "http://localhost:8288",
-    isDev: process.env.NODE_ENV !== "production",
+    // baseUrl:
+    //   process.env.NODE_ENV === "production"
+    //     ? "https://api.inngest.com"
+    //     : "http://localhost:8288",
+    // isDev: process.env.NODE_ENV !== "production",
+    baseUrl: "https://api.inngest.com",
+    isDev: false,
     id: "mastra",
     middleware: [realtimeMiddleware()]
   })
