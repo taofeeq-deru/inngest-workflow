@@ -10,7 +10,7 @@ const { createStep, createWorkflow } = init(
     //     ? "https://api.inngest.com"
     //     : "http://localhost:8288",
     // isDev: process.env.NODE_ENV !== "production",
-    baseUrl: "https://full-slow-airplane.mastra.cloud/",
+    baseUrl: "https://full-slow-airplane.mastra.cloud",
     isDev: false,
     id: "mastra",
     middleware: [realtimeMiddleware()]
