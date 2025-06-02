@@ -61,7 +61,7 @@ export const mastra = new Mastra({
             mastra,
             inngest: new Inngest({
               id: "mastra",
-              baseUrl: "https://api.inngest.com",
+              baseUrl: "https://full-slow-airplane.mastra.cloud/",
               isDev: false,
               // baseUrl:
               //   process.env.NODE_ENV === "production"
